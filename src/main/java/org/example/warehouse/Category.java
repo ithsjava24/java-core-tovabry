@@ -1,35 +1,27 @@
 package org.example.warehouse;
 
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Category {
 
-    private String categoryName;
-    
+    private final String categoryName;
+    private static final Map<String, Category> instances = new HashMap<>();
+
+
     private Category(String categoryName) {
-        if (categoryName == null) {
-            throw new NullPointerException("category name is null");
-        }
         this.categoryName = categoryName.substring(0, 1).toUpperCase() + categoryName.substring(1);
     }
 
-    public static Category of(String categoryName) {
-    return new Category(categoryName);
+    public static Category of(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("Category name can't be null");
+        }
+        return instances.computeIfAbsent(name, Category::new);
     }
 
     public String getName() {
         return categoryName;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Category category)) return false;
-        return Objects.equals(categoryName, category.categoryName);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(categoryName);
-    }
 }
