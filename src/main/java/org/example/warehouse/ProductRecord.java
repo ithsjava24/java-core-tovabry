@@ -12,7 +12,9 @@ public record ProductRecord (UUID productId, String name, Category categoryName,
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Product name can't be null or empty.");
         }
-        categoryName = Objects.requireNonNull(categoryName, "Category can't be null.");
+        if (categoryName == null) {
+            throw new IllegalArgumentException("Category can't be null.");
+        }
 
         price = (price != null) ? price : BigDecimal.ZERO;
     }
@@ -27,7 +29,7 @@ public record ProductRecord (UUID productId, String name, Category categoryName,
 
     public Category category() {
         return categoryName;
-}
+    }
 
     @Override
     public boolean equals(Object o) {
