@@ -15,7 +15,9 @@ public class Category {
     }
 
     public static Category of(String name) {
-        Objects.requireNonNull(name, "Category name can't be null");
+        if (name == null) {
+            throw new IllegalArgumentException("Category name can't be null");
+        }
         return instances.computeIfAbsent(name, Category::new);
     }
 
