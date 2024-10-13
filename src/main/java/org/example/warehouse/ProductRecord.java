@@ -8,14 +8,12 @@ public record ProductRecord (UUID productId, String name, Category categoryName,
 
     public ProductRecord {
         productId = Objects.requireNonNullElseGet(productId, UUID::randomUUID);
-
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Product name can't be null or empty.");
         }
         if (categoryName == null) {
             throw new IllegalArgumentException("Category can't be null.");
         }
-
         price = (price != null) ? price : BigDecimal.ZERO;
     }
 

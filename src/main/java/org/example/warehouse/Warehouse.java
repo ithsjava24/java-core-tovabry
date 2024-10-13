@@ -61,9 +61,9 @@ public class Warehouse {
     }
 
     public Optional<ProductRecord> getProductById(UUID productId) {
-        return productList.stream() // Skapa en stream av addedProducts
-                .filter(product -> product.productId().equals(productId)) // Filtrera efter det givna UUID
-                .findFirst();// Hämta den första produkten som matchar eller returnera tomt
+        return productList.stream()
+                .filter(product -> product.productId().equals(productId))
+                .findFirst();
     }
 
     public List<ProductRecord> getChangedProducts() {
