@@ -1,73 +1,69 @@
 package org.example.warehouse;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Warehouse {
     private final String name;
-    private final List<ProductRecord> addedProducts = new ArrayList<>();
-    private static final Map<String, Warehouse> instances = new HashMap<>();
+    private final List<ProductRecord> productList = new ArrayList<>();
     private final List<ProductRecord> changedProducts = new ArrayList<>();
+    private static final Map<String, Warehouse> warehouseMap = new HashMap<>();
 
     private Warehouse() {
-    this.name = "MyStore";
+    this("MyStore");
     }
 
     private Warehouse(String warehouseName) {
         this.name = warehouseName;
     }
 
-    public static Warehouse getInstance(String name) {
-        if (instances.containsKey(name)) {
-            return instances.get(name);
-        } else {
-            Warehouse warehouse = new Warehouse(name);
-            instances.put(name, warehouse);
-            return warehouse;
-        }
-    }
-
-    public String getName() {
-        return name;
+    public static Warehouse getInstance(String warehouseName) {
+        return warehouseMap.computeIfAbsent(warehouseName, Warehouse::new);
     }
 
     public static Warehouse getInstance() {
         return new Warehouse();
     }
 
-    public boolean isEmpty() {
-        return addedProducts.isEmpty();
+    public String getName() {
+        return name;
     }
 
-    //Lägger in produkten i listan, samt returnerar produkten
-    public ProductRecord addProduct(UUID uuidName, String name, Category categoryName, BigDecimal price) {
-        boolean productExists = addedProducts.stream()
-                .anyMatch(product -> product.UUID_value().equals(uuidName)
-                );
-        if (productExists) {
+    public boolean isEmpty() {
+        return productList.isEmpty();
+    }
+
+    private boolean productExists(UUID existingId) {
+        return productList.stream()
+                .anyMatch(product -> product.productId().equals(existingId));
+    }
+
+    public ProductRecord addProduct(UUID productId, String productName, Category categoryName, BigDecimal price) {
+        if (productExists(productId)) {
             throw new IllegalArgumentException("Product with that id already exists, use updateProduct for updates.");
         }
-        ProductRecord addedProduct = new ProductRecord(uuidName, name, categoryName, price);
-        addedProducts.add(addedProduct);
+
+        ProductRecord addedProduct = new ProductRecord(productId, productName, categoryName, price);
+        productList.add(addedProduct);
         return addedProduct;
     }
 
-    public Optional<ProductRecord> getProductById(UUID uuid) {
-        return addedProducts.stream() // Skapa en stream av addedProducts
-                .filter(product -> product.UUID_value().equals(uuid)) // Filtrera efter det givna UUID
-                .findFirst();// Hämta den första produkten som matchar eller returnera tomt
-    }
 
-    public void updateProductPrice(UUID uuid, BigDecimal newPrice) {
-        getProductById(uuid).ifPresentOrElse(product -> {
+    public void updateProductPrice(UUID productId, BigDecimal newPrice) {
+        getProductById(productId).ifPresentOrElse(product -> {
             ProductRecord updatedProduct = product.setPrice(newPrice);
-            addedProducts.set(addedProducts.indexOf(product), updatedProduct);
+            productList.set(productList.indexOf(product), updatedProduct);
             changedProducts.add(product);
         }, () -> {
             throw new IllegalArgumentException("Product with that id doesn't exist.");
         });
+    }
+
+    public Optional<ProductRecord> getProductById(UUID productId) {
+        return productList.stream() // Skapa en stream av addedProducts
+                .filter(product -> product.productId().equals(productId)) // Filtrera efter det givna UUID
+                .findFirst();// Hämta den första produkten som matchar eller returnera tomt
     }
 
     public List<ProductRecord> getChangedProducts() {
@@ -75,16 +71,16 @@ public class Warehouse {
     }
 
     public List<ProductRecord> getProducts() {
-        return Collections.unmodifiableList(addedProducts);
+        return Collections.unmodifiableList(productList);
     }
 
     public Map<Category, List<ProductRecord>> getProductsGroupedByCategories() {
-        return addedProducts.stream()
+        return productList.stream()
                 .collect(Collectors.groupingBy(ProductRecord::category));
     }
 
     public List<ProductRecord> getProductsBy(Category category) {
-        return addedProducts.stream()
+        return productList.stream()
                 .filter(product -> product.category().equals(category))
                 .toList();
     }
